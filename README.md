@@ -195,8 +195,5 @@ When contributing, ensure your code complies with **Phase 1: Pre-Flight App Prep
 - ✅ Verify that graceful shutdown handlers remain intact
 - ✅ Ensure `/health` and `/ready` endpoints are functional
 
----
 
-## 📄 License
 
-[Insert License Here] — See [LICENSE](LICENSE) for details.
