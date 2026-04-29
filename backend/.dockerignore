@@ -1,0 +1,36 @@
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/*.egg-info/
+
+# Virtual environments
+**/venv/
+**/.venv/
+**/env/
+
+# Django
+**/db.sqlite3
+**/staticfiles/
+**/mediafiles/
+
+# Environment files
+.env
+.env.*
+
+# Frontend (not needed in backend image)
+frontend/
+nginx/
+
+# Docker files (no need to copy these into the image)
+docker-compose.yml
+Dockerfile
+
+# Git
+.git/
+.gitignore
+
+# VS Code
+.vscode/
