@@ -8,3 +8,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+backend/.env.dev
+backend/.env.prod
+backend/.env
