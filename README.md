@@ -161,7 +161,7 @@ Code Push
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/your-org/your-repo.git
+git clone git@github.com:bruceminanga/My-app-for-learning-docker.git
 cd your-repo
 ```
 
