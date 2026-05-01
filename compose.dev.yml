@@ -1,3 +1,4 @@
+name: my-app-dev
 services:
   db:
     image: postgres:16-alpine@sha256:b89a4e92591810eac1fbce6107485d7c6b9449df51c1ccfcfed514a7fdd69955
@@ -43,6 +44,8 @@ services:
         VERSION: ${VERSION:-1.0.0}
     ports:
       - "5173:5173"
+    env_file:
+      - frontend/.env.dev
     volumes:
       - ./frontend:/app:z
       - /app/node_modules

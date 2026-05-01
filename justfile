@@ -1,98 +1,66 @@
 # ----------------------------
-# All docker compose commands for dev and prod environments, with git metadata injection
+# Global Environment for developer experience to make them not type wrong commands
 # ----------------------------
 
-git_sha     := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
-version     := `git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0"`
-compose_dev := "docker compose -f compose.dev.yml"
-compose     := "docker compose"
+# Default environment is dev, override with `just env=prod <command>`
+env := "dev"
+
+# Dynamically set the docker compose command based on the environment
+compose := if env == "dev" { "docker compose -f compose.dev.yml" } else { "docker compose -f compose.yml" }
+
+export GIT_SHA := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
+export VERSION := `git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0"`
 
 # List all available commands
 default:
     @just --list
 
 # ----------------------------
-# Dev workflow
+# Workflows (Adapts to dev or prod automatically)
 # ----------------------------
 
-# Build fresh and start all services (dev) - single shortcut
-dev:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose_dev}} up --build
-
-# Start all services (dev)
-dev-up:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose_dev}} up
-
-# Stop all services (dev)
-dev-down:
-    {{compose_dev}} down
-
-# Build all images fresh, no cache (dev)
-dev-build:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose_dev}} build --no-cache
-
-# Build all images using cache (dev)
-dev-build-fast:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose_dev}} build
-
-# Down + up in one shot (dev)
-dev-restart: dev-down dev-up
-
-# Follow logs for all services (dev)
-dev-logs:
-    {{compose_dev}} logs -f
-
-# Show running containers (dev)
-dev-ps:
-    {{compose_dev}} ps
-
-# Show only running containers with details (dev)
-dev-ps-running:
-    {{compose_dev}} ps --status=running --format "table {{{{.Name}}}}\t{{{{.Service}}}}\t{{{{.Status}}}}\t{{{{.Ports}}}}"
-
-# Stop containers and remove images (dev)
-dev-clean:
-    {{compose_dev}} down --rmi all --volumes --remove-orphans
-
-# ----------------------------
-# Prod workflow
-# ----------------------------
-
-# Start all services (prod)
+# Start all services in the background
 up:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose}} up -d
+    {{compose}} up -d
 
-# Stop all services (prod)
+# Build fresh and start all services in the background
+up-build:
+    {{compose}} up --build -d
+
+# Stop and remove containers, networks, etc.
 down:
     {{compose}} down
 
-# Build all images fresh, no cache (prod)
+# Stop a specific service or all if none given (keeps container intact)
+stop service="":
+    {{compose}} stop {{service}}
+
+# Build all images fresh, NO cache
 build:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose}} build --no-cache
+    {{compose}} build --no-cache
 
-# Build all images using cache (prod)
+# Build all images FAST, USING cache
 build-fast:
-    GIT_SHA={{git_sha}} VERSION={{version}} {{compose}} build
+    {{compose}} build
 
-# Down + up in one shot (prod)
+# Down + up in one shot
 restart: down up
 
-# Follow logs for all services (prod)
+# Follow logs for all services
 logs:
     {{compose}} logs -f
 
-# Show running containers (prod)
+# Show all containers
 ps:
-    {{compose}} ps
+    {{compose}} ps --format "table {{ '{{.Name}}' }}\t{{ '{{.Service}}' }}\t{{ '{{.Status}}' }}\t{{ '{{.Ports}}' }}"
 
-# Show only running containers with details (prod)
+# Show ONLY running containers
 ps-running:
-    {{compose}} ps --status=running --format "table {{{{.Name}}}}\t{{{{.Service}}}}\t{{{{.Status}}}}\t{{{{.Ports}}}}"
+    {{compose}} ps --status=running --format "table {{ '{{.Name}}' }}\t{{ '{{.Service}}' }}\t{{ '{{.Status}}' }}\t{{ '{{.Ports}}' }}"
 
-# Stop containers and remove images (prod)
+# Full clean: Stop containers, remove images, volumes, and orphans
 clean:
     {{compose}} down --rmi all --volumes --remove-orphans
-
 
 # ----------------------------
 # Cleanup
@@ -103,7 +71,7 @@ prune:
     docker system prune -af --volumes
 
 # ----------------------------
-# Info
+# Info & Diagnostics
 # ----------------------------
 
 # Inspect OCI labels on all images
@@ -111,10 +79,12 @@ labels:
     #!/usr/bin/env bash
     for img in my-app-backend:latest my-app-frontend:latest; do
         echo "=== $img ==="
-        docker inspect $img --format '{{{{ json .Config.Labels }}}}' | jq
+        docker inspect $img --format '{{ '{{ json .Config.Labels }}' }}' | jq
     done
 
-# Print current git SHA and version
+# Print current environment and git metadata
 info:
-    @echo "GIT_SHA = {{git_sha}}"
-    @echo "VERSION = {{version}}"
+    @echo "ENVIRONMENT = {{env}}"
+    @echo "COMPOSE CMD = {{compose}}"
+    @echo "GIT_SHA     = {{GIT_SHA}}"
+    @echo "VERSION     = {{VERSION}}"

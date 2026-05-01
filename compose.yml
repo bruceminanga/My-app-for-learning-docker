@@ -1,3 +1,4 @@
+name: my-app-prod
 services:
   db:
     image: postgres:16-alpine@sha256:b89a4e92591810eac1fbce6107485d7c6b9449df51c1ccfcfed514a7fdd69955
@@ -35,7 +36,9 @@ services:
       context: frontend/
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+    - "8080:80"
+    env_file:
+      - frontend/.env.dev
     restart: unless-stopped
     depends_on:
       - backend
